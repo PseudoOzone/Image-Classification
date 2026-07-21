@@ -1,290 +1,127 @@
-# CIFAR-10 Image Classifier with Flask Deployment
+# CIFAR-10 CNN with Flask Demo
 
-A full-stack deep learning application that trains a Convolutional Neural Network (CNN) on the CIFAR-10 dataset and deploys it as a web application using Flask. This project demonstrates end-to-end machine learning workflow from model training to production deployment.
+An educational end-to-end image-classification project that trains a small convolutional neural network on CIFAR-10 and serves predictions through a Flask web interface.
 
-![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-2.20-orange.svg)
-![Flask](https://img.shields.io/badge/Flask-3.1-green.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+> **Status:** learning project and local demo. It is not production-ready and is not intended for safety-critical or real-world image-recognition decisions.
 
-## 🎯 Features
+## What it demonstrates
 
-- **Deep Learning Model**: CNN architecture optimized for CIFAR-10 image classification
-- **Web Interface**: Modern, responsive UI with drag-and-drop image upload
-- **Real-time Prediction**: Instant image classification with confidence scores
-- **Complete Predictions**: View predictions for all 10 CIFAR-10 classes
-- **Image Preprocessing**: Automatic image resizing and normalization
-- **Production Ready**: Flask-based deployment with error handling
+- Loading and normalizing CIFAR-10 with Keras
+- Building a three-block convolutional neural network
+- Training and saving a TensorFlow/Keras model
+- Accepting an image through a Flask endpoint
+- Resizing and normalizing the uploaded image
+- Returning the top class and class probabilities
+- Rendering a simple browser interface
 
-## 📋 Table of Contents
+## Model architecture
 
-- [Overview](#overview)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Model Architecture](#model-architecture)
-- [Dataset](#dataset)
-- [Technologies Used](#technologies-used)
-- [API Endpoints](#api-endpoints)
-- [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [License](#license)
-
-## 🔍 Overview
-
-This project implements a complete machine learning pipeline:
-
-1. **Data Preprocessing**: Loads and normalizes CIFAR-10 dataset
-2. **Model Training**: Trains a CNN with 3 convolutional blocks
-3. **Model Persistence**: Saves trained model to disk
-4. **Web Deployment**: Flask application for real-time predictions
-
-The CIFAR-10 dataset consists of 60,000 32x32 color images in 10 classes:
-- Airplane
-- Automobile
-- Bird
-- Cat
-- Deer
-- Dog
-- Frog
-- Horse
-- Ship
-- Truck
-
-## 📁 Project Structure
-
-```
-Image Classification/
-│
-├── requirements.txt              # Python dependencies
-├── cnn_model.py                  # CNN model architecture
-├── dataset_preprocessing.py      # Data loading and preprocessing
-├── train_model.py                # Model training script
-├── flask_app.py                  # Flask web application
-├── image_classifier_model.h5      # Trained model (generated after training)
-│
-└── templates/
-    └── index.html                # Web interface
+```text
+32 x 32 RGB image
+    |
+Conv2D(32, 3x3) + ReLU
+    |
+MaxPooling2D
+    |
+Conv2D(64, 3x3) + ReLU
+    |
+MaxPooling2D
+    |
+Conv2D(64, 3x3) + ReLU
+    |
+Flatten
+    |
+Dense(64) + ReLU
+    |
+Dense(10) + Softmax
 ```
 
-## 🚀 Installation
+The ten CIFAR-10 labels are airplane, automobile, bird, cat, deer, dog, frog, horse, ship, and truck.
 
-### Prerequisites
+## Repository structure
 
-- Python 3.9 or higher
-- pip (Python package manager)
+```text
+Image-Classification/
+├── cnn_model.py
+├── dataset_preprocessing.py
+├── train_model.py
+├── flask_app.py
+├── requirements.txt
+├── templates/
+└── image_classifier_model.h5   # generated after training, if retained locally
+```
 
-### Step 1: Clone the Repository
+## Setup
 
 ```bash
-git clone https://github.com/yourusername/image-classification.git
-cd image-classification
-```
+git clone https://github.com/PseudoOzone/Image-Classification.git
+cd Image-Classification
 
-### Step 2: Install Dependencies
+python -m venv .venv
 
-```bash
+# Windows
+.venv\Scripts\activate
+
+# macOS or Linux
+source .venv/bin/activate
+
 pip install -r requirements.txt
 ```
 
-This will install:
-- `tensorflow` - Deep learning framework
-- `keras` - High-level neural networks API
-- `numpy` - Numerical computing
-- `flask` - Web framework
-- `opencv-python` - Image processing
-
-## 💻 Usage
-
-### Step 1: Train the Model
-
-Train the CNN model on the CIFAR-10 dataset:
+## Train the model
 
 ```bash
 python train_model.py
 ```
 
-This will:
-- Download the CIFAR-10 dataset (if not already present)
-- Preprocess the data (normalize pixel values to [0, 1])
-- Create and compile the CNN model
-- Train for 5 epochs
-- Save the model as `image_classifier_model.h5`
-- Display training progress and final test accuracy
+Training downloads CIFAR-10 if necessary and writes the model file expected by the Flask application.
 
-**Expected Output:**
-- Training accuracy: ~71%
-- Test accuracy: ~69%
+Do not cite an accuracy value unless it comes from the current run output or a committed evaluation artifact. Accuracy changes with TensorFlow versions, random initialization, epochs, and training configuration.
 
-### Step 2: Start the Flask Application
+## Run the web application
 
 ```bash
 python flask_app.py
 ```
 
-The application will start on `http://localhost:5001` (or port 5000 if available).
+Open the local URL shown in the terminal, upload an image, and inspect the returned class probabilities.
 
-**Note:** On macOS, port 5000 may be occupied by AirPlay Receiver. The app automatically uses port 5001 in such cases.
+CIFAR-10 contains low-resolution 32 x 32 training images. Predictions on arbitrary photographs can be poor even when the model performs reasonably on the benchmark test set.
 
-### Step 3: Use the Web Interface
+## API
 
-1. Open your browser and navigate to `http://localhost:5001`
-2. Click "Choose Image" or drag and drop an image file
-3. Click "Classify Image" to get predictions
-4. View the predicted class and confidence scores for all 10 categories
+### `GET /`
 
-## 🧠 Model Architecture
+Renders the upload page.
 
-The CNN model consists of:
+### `POST /predict`
 
-```
-Input Layer: (32, 32, 3)
-    ↓
-Conv2D (32 filters, 3x3) + ReLU
-    ↓
-MaxPooling2D (2x2)
-    ↓
-Conv2D (64 filters, 3x3) + ReLU
-    ↓
-MaxPooling2D (2x2)
-    ↓
-Conv2D (64 filters, 3x3) + ReLU
-    ↓
-Flatten
-    ↓
-Dense (64 units) + ReLU
-    ↓
-Dense (10 units) + Softmax
-```
+Accepts a multipart image upload and returns a JSON prediction when the model is loaded successfully.
 
-**Model Summary:**
-- **Total Parameters**: ~120,000+
-- **Optimizer**: Adam
-- **Loss Function**: Sparse Categorical Crossentropy
-- **Metrics**: Accuracy
+## Known limitations
 
-## 📊 Dataset
+- The application checks file extensions but does not verify the true file type before decoding.
+- Invalid or corrupted images can cause OpenCV preprocessing errors.
+- Uploaded files are stored on disk and are not automatically removed.
+- Reusing the same filename can overwrite an earlier upload.
+- The model is loaded when the module imports, making startup dependent on the local model file.
+- Running Flask with debug mode on `0.0.0.0` is unsafe outside a trusted local environment.
+- There is no authentication, rate limiting, CSRF protection, malware scanning, or production storage policy.
+- The network is a small tutorial architecture without augmentation, regularization, calibration, or modern benchmark comparison.
+- There is no automated test suite or continuous-integration workflow.
 
-The CIFAR-10 dataset is automatically downloaded from Keras datasets on first run.
+## Recommended improvements
 
-- **Training Set**: 50,000 images
-- **Test Set**: 10,000 images
-- **Image Size**: 32x32 pixels
-- **Channels**: RGB (3 channels)
-- **Classes**: 10
+- decode uploads in memory and reject invalid images
+- generate unique temporary filenames and delete them after inference
+- add pixel-count and file-size safeguards
+- use an application factory and explicit model lifecycle
+- disable debug mode by default
+- add tests for preprocessing and API error cases
+- record deterministic seeds and evaluation results
+- add data augmentation, early stopping, calibration, and confusion-matrix reporting
+- package the model with a model card describing intended use and limitations
 
-## 🛠 Technologies Used
+## License
 
-- **TensorFlow/Keras**: Deep learning framework
-- **Flask**: Web application framework
-- **OpenCV**: Image processing and preprocessing
-- **NumPy**: Numerical operations
-- **HTML/CSS/JavaScript**: Frontend interface
-
-## 🔌 API Endpoints
-
-### GET `/`
-Renders the main web interface.
-
-### POST `/predict`
-Accepts an image file and returns classification results.
-
-**Request:**
-- Method: POST
-- Content-Type: multipart/form-data
-- Body: Image file (png, jpg, jpeg, gif, bmp)
-
-**Response:**
-```json
-{
-  "predicted_class": "cat",
-  "confidence": 85.23,
-  "all_predictions": {
-    "airplane": 2.15,
-    "automobile": 1.23,
-    "bird": 3.45,
-    "cat": 85.23,
-    "deer": 1.12,
-    "dog": 4.56,
-    "frog": 0.89,
-    "horse": 0.67,
-    "ship": 0.34,
-    "truck": 0.36
-  }
-}
-```
-
-## 📸 Screenshots
-
-*Add screenshots of your application here*
-
-## 🔧 Configuration
-
-### Changing Training Parameters
-
-Edit `train_model.py` to modify:
-- Number of epochs (default: 5)
-- Batch size (default: 32)
-- Validation split
-
-### Changing Model Architecture
-
-Edit `cnn_model.py` to modify:
-- Number of convolutional layers
-- Filter sizes
-- Dense layer units
-- Activation functions
-
-### Changing Flask Port
-
-Edit `flask_app.py` line 129:
-```python
-app.run(debug=True, host='0.0.0.0', port=5001)
-```
-
-## 🐛 Troubleshooting
-
-### Port Already in Use
-If port 5000/5001 is already in use:
-- On macOS: Disable AirPlay Receiver in System Preferences
-- Or change the port in `flask_app.py`
-
-### Model Not Found Error
-Make sure to run `python train_model.py` before starting the Flask app to generate `image_classifier_model.h5`.
-
-### Import Errors
-Ensure all dependencies are installed:
-```bash
-pip install -r requirements.txt
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👤 Author
-
-**Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
-
-## 🙏 Acknowledgments
-
-- CIFAR-10 dataset creators
-- TensorFlow/Keras team
-- Flask development community
-
----
-
-⭐ If you found this project helpful, please consider giving it a star!
-
+Educational and portfolio use only unless a separate license file states otherwise.
